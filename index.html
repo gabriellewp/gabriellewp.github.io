@@ -3,274 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gabrielle Poerwawinata - CV</title>
+    <title>Gabrielle - Interactive Memory Card Game</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            width: 100%;
             background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 20px;
-        }
-        
+
         h1 {
-            color: #667eea;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            color: #764ba2;
-            font-size: 1.2em;
-            font-weight: 300;
-        }
-        
-        section {
-            margin-bottom: 35px;
-        }
-        
-        h2 {
-            color: #667eea;
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            border-left: 4px solid #764ba2;
-            padding-left: 15px;
-        }
-        
-        .entry {
-            margin-bottom: 20px;
-            padding-left: 20px;
-        }
-        
-        .entry-title {
-            font-weight: 600;
+            text-align: center;
             color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
             font-size: 1.1em;
         }
-        
-        .entry-subtitle {
-            color: #764ba2;
-            font-style: italic;
-            margin-top: 5px;
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
-        
-        .entry-date {
-            color: #999;
-            font-size: 0.95em;
-            margin-top: 5px;
+
+        .stat-item {
+            text-align: center;
+            padding: 15px 25px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            min-width: 120px;
         }
-        
-        .entry-description {
-            color: #555;
-            margin-top: 10px;
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card {
+            width: 100%;
+            aspect-ratio: 1;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 2.5em;
+        }
+
+        .card-back {
+            background: white;
+            color: #333;
+            transform: rotateY(180deg);
+            border: 2px solid #667eea;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+
+        .card.matched .card-face {
+            cursor: default;
+        }
+
+        .card.matched .card-front {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .message {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            min-height: 30px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .game-over.show {
+            display: flex;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+        }
+
+        .game-over-content h2 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .game-over-content p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .legend {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .legend-item {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .legend-item h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .legend-item p {
+            color: #666;
+            font-size: 0.9em;
             line-height: 1.5;
         }
-        
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .skill-item {
-            background: #f0f0f0;
-            padding: 12px 15px;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-            font-weight: 500;
-        }
-        
-        .language-item {
-            background: #f0f0f0;
-            padding: 12px 15px;
-            border-radius: 5px;
-            border-left: 4px solid #764ba2;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-        
-        .project-item {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #e0e0e0;
-            margin-bottom: 15px;
-        }
-        
-        .project-title {
-            font-weight: 600;
-            color: #333;
-            font-size: 1.05em;
-        }
-        
-        .project-description {
-            color: #555;
-            margin-top: 8px;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            color: #999;
-            font-size: 0.9em;
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+
+            .card-front {
+                font-size: 1.8em;
+            }
+
+            .card-face {
+                font-size: 0.8em;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Gabrielle Poerwawinata</h1>
-            <p class="subtitle">Research Engineer | Software Developer</p>
-        </header>
+        <h1>🎮 Memory Card Game</h1>
+        <p class="subtitle">Flip cards to match my experience, education, and skills!</p>
 
-        <section id="education">
-            <h2>Education</h2>
-            
-            <div class="entry">
-                <div class="entry-title">M.Sc. Informatics</div>
-                <div class="entry-subtitle">Technical University of Munich (TUM)</div>
-                <div class="entry-date">2017 - 2020</div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Moves</div>
+                <div class="stat-value" id="moves">0</div>
             </div>
-            
-            <div class="entry">
-                <div class="entry-title">B.Sc. Computer Science</div>
-                <div class="entry-subtitle">Bandung Institute of Technology (ITB)</div>
-                <div class="entry-date">2010 - 2015</div>
+            <div class="stat-item">
+                <div class="stat-label">Matched Pairs</div>
+                <div class="stat-value" id="matched">0 / 6</div>
             </div>
-        </section>
+            <div class="stat-item">
+                <div class="stat-label">Time</div>
+                <div class="stat-value" id="time">0s</div>
+            </div>
+        </div>
 
-        <section id="experience">
-            <h2>Work Experience</h2>
-            
-            <div class="entry">
-                <div class="entry-title">Research Engineer</div>
-                <div class="entry-subtitle">University of Amsterdam</div>
-                <div class="entry-date">2023 - Present</div>
-                <div class="entry-description">Leading research initiatives in computing systems and optimization.</div>
-            </div>
-            
-            <div class="entry">
-                <div class="entry-title">Research Assistant</div>
-                <div class="entry-subtitle">University of Basel</div>
-                <div class="entry-date">2021 - 2022</div>
-                <div class="entry-description">Conducted research in high-performance computing and distributed systems.</div>
-            </div>
-            
-            <div class="entry">
-                <div class="entry-title">Student Software Developer</div>
-                <div class="entry-subtitle">Intel</div>
-                <div class="entry-date">2017 - 2019</div>
-                <div class="entry-description">Developed software solutions for IoT and embedded systems applications.</div>
-            </div>
-            
-            <div class="entry">
-                <div class="entry-title">Software Engineer</div>
-                <div class="entry-subtitle">Microelectronics Center ITB</div>
-                <div class="entry-date">2016 - 2017</div>
-                <div class="entry-description">Designed and implemented microelectronics-related software systems.</div>
-            </div>
-            
-            <div class="entry">
-                <div class="entry-title">Intern</div>
-                <div class="entry-subtitle">BlackBerry Innovation Center</div>
-                <div class="entry-date">2014 - 2015</div>
-                <div class="entry-description">Contributed to mobile security and application development projects.</div>
-            </div>
-        </section>
+        <div class="message" id="message"></div>
 
-        <section id="technical-skills">
-            <h2>Technical Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-item">Python</div>
-                <div class="skill-item">C++</div>
-                <div class="skill-item">JavaScript</div>
-                <div class="skill-item">Docker</div>
-                <div class="skill-item">SLURM</div>
-                <div class="skill-item">PyTorch</div>
-                <div class="skill-item">LLMs</div>
-                <div class="skill-item">Web Development</div>
-                <div class="skill-item">HPC</div>
-            </div>
-        </section>
+        <div class="game-board" id="gameBoard"></div>
 
-        <section id="languages">
-            <h2>Languages</h2>
-            
-            <div class="language-item">
-                <strong>Indonesian</strong> - Native
-            </div>
-            
-            <div class="language-item">
-                <strong>English</strong> - Fluent
-            </div>
-            
-            <div class="language-item">
-                <strong>Deutsch</strong> - A2.2
-            </div>
-            
-            <div class="language-item">
-                <strong>Dutch</strong> - A2.1
-            </div>
-        </section>
+        <div class="controls">
+            <button class="btn-primary" onclick="initGame()">New Game</button>
+            <button class="btn-secondary" onclick="showInstructions()">Instructions</button>
+        </div>
 
-        <section id="projects">
-            <h2>Projects</h2>
-            
-            <div class="project-item">
-                <div class="project-title">AnnoRank</div>
-                <div class="project-description">Web annotation platform designed for collaborative content analysis and ranking.</div>
+        <div class="legend">
+            <div class="legend-item">
+                <h3>��� Work Experience</h3>
+                <p>Match pairs to discover my professional background and roles</p>
             </div>
-            
-            <div class="project-item">
-                <div class="project-title">DAPHNE Project</div>
-                <div class="project-description">Task scheduling optimization system for distributed computing environments.</div>
+            <div class="legend-item">
+                <h3>🎓 Education</h3>
+                <p>Find matching education qualifications and institutions</p>
             </div>
-            
-            <div class="project-item">
-                <div class="project-title">IoT MQTT Gateway</div>
-                <div class="project-description">MQTT-based gateway developed at Intel for IoT device communication and management.</div>
+            <div class="legend-item">
+                <h3>🛠️ Skills</h3>
+                <p>Discover the technical and professional skills I've developed</p>
             </div>
-            
-            <div class="project-item">
-                <div class="project-title">e-Healthcare Smart Card Systems</div>
-                <div class="project-description">Secure health information management system using smart card technology.</div>
-            </div>
-            
-            <div class="project-item">
-                <div class="project-title">Smart Energy Android App</div>
-                <div class="project-description">Mobile application for monitoring and optimizing energy consumption.</div>
-            </div>
-        </section>
-
-        <footer>
-            <p>Last Updated: December 25, 2025</p>
-        </footer>
+        </div>
     </div>
+
+    <div class="game-over" id="gameOverModal">
+        <div class="game-over-content">
+            <h2>🎉 Congratulations!</h2>
+            <p id="gameOverMessage"></p>
+            <button class="btn-primary" onclick="initGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const cards = [
+            // Work Experience Pairs
+            { category: '💼', text: 'Software Engineer', pair: 'SWE' },
+            { category: '💼', text: 'SWE', pair: 'Software Engineer' },
+            
+            { category: '💼', text: '5+ Years Experience', pair: 'Experience' },
+            { category: '💼', text: 'Experience', pair: '5+ Years Experience' },
+            
+            { category: '💼', text: 'Full Stack Development', pair: 'FullStack' },
+            { category: '💼', text: 'FullStack', pair: 'Full Stack Development' },
+            
+            // Education Pairs
+            { category: '🎓', text: 'Bachelor of Science', pair: 'BS' },
+            { category: '🎓', text: 'BS', pair: 'Bachelor of Science' },
+            
+            { category: '🎓', text: 'Computer Science', pair: 'CS' },
+            { category: '🎓', text: 'CS', pair: 'Computer Science' },
+            
+            { category: '🎓', text: 'Continuous Learning', pair: 'Learning' },
+            { category: '🎓', text: 'Learning', pair: 'Continuous Learning' },
+            
+            // Skills Pairs
+            { category: '🛠️', text: 'JavaScript/TypeScript', pair: 'JS/TS' },
+            { category: '🛠️', text: 'JS/TS', pair: 'JavaScript/TypeScript' },
+            
+            { category: '🛠️', text: 'React & Vue.js', pair: 'Frontend' },
+            { category: '🛠️', text: 'Frontend', pair: 'React & Vue.js' },
+            
+            { category: '🛠️', text: 'Node.js & Databases', pair: 'Backend' },
+            { category: '🛠️', text: 'Backend', pair: 'Node.js & Databases' },
+            
+            { category: '🛠️', text: 'Problem Solving', pair: 'Solving' },
+            { category: '🛠️', text: 'Solving', pair: 'Problem Solving' },
+            
+            { category: '🛠️', text: 'Team Collaboration', pair: 'Collab' },
+            { category: '🛠️', text: 'Collab', pair: 'Team Collaboration' },
+            
+            { category: '🛠️', text: 'UI/UX Design', pair: 'Design' },
+            { category: '🛠️', text: 'Design', pair: 'UI/UX Design' }
+        ];
+
+        let gameBoard = document.getElementById('gameBoard');
+        let gameState = {
+            cards: [],
+            flipped: [],
+            matched: [],
+            moves: 0,
+            time: 0,
+            gameStarted: false,
+            gameOver: false,
+            timerInterval: null
+        };
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initGame() {
+            gameState.cards = shuffleArray(cards);
+            gameState.flipped = [];
+            gameState.matched = [];
+            gameState.moves = 0;
+            gameState.time = 0;
+            gameState.gameStarted = false;
+            gameState.gameOver = false;
+            
+            clearInterval(gameState.timerInterval);
+            
+            document.getElementById('gameOverModal').classList.remove('show');
+            document.getElementById('message').textContent = '';
+            renderBoard();
+            updateStats();
+        }
+
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            gameState.cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-front">?</div>
+                        <div class="card-face card-back">${card.category} ${card.text}</div>
+                    </div>
+                `;
+                cardElement.addEventListener('click', () => flipCard(index));
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        function flipCard(index) {
+            if (!gameState.gameStarted) {
+                gameState.gameStarted = true;
+                startTimer();
+            }
+
+            const card = gameState.cards[index];
+            const cardElement = document.querySelectorAll('.card')[index];
+
+            if (gameState.flipped.includes(index) || gameState.matched.includes(index) || gameState.gameOver) {
+                return;
+            }
+
+            if (gameState.flipped.length < 2) {
+                gameState.flipped.push(index);
+                cardElement.classList.add('flipped');
+
+                if (gameState.flipped.length === 2) {
+                    gameState.moves++;
+                    updateStats();
+                    checkMatch();
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [index1, index2] = gameState.flipped;
+            const card1 = gameState.cards[index1];
+            const card2 = gameState.cards[index2];
+
+            if (card1.pair === card2.text && card2.pair === card1.text) {
+                // Match found
+                gameState.matched.push(index1, index2);
+                document.querySelectorAll('.card')[index1].classList.add('matched');
+                document.querySelectorAll('.card')[index2].classList.add('matched');
+                gameState.flipped = [];
+                
+                document.getElementById('message').textContent = '✨ Great match!';
+                setTimeout(() => {
+                    document.getElementById('message').textContent = '';
+                }, 1000);
+
+                updateStats();
+                
+                if (gameState.matched.length === gameState.cards.length) {
+                    endGame();
+                }
+            } else {
+                // No match
+                document.getElementById('message').textContent = '❌ Not a match. Try again!';
+                setTimeout(() => {
+                    document.querySelectorAll('.card')[index1].classList.remove('flipped');
+                    document.querySelectorAll('.card')[index2].classList.remove('flipped');
+                    gameState.flipped = [];
+                    document.getElementById('message').textContent = '';
+                }, 1000);
+            }
+        }
+
+        function startTimer() {
+            gameState.timerInterval = setInterval(() => {
+                gameState.time++;
+                updateStats();
+            }, 1000);
+        }
+
+        function updateStats() {
+            document.getElementById('moves').textContent = gameState.moves;
+            document.getElementById('matched').textContent = `${gameState.matched.length / 2} / ${gameState.cards.length / 2}`;
+            document.getElementById('time').textContent = gameState.time + 's';
+        }
+
+        function endGame() {
+            gameState.gameOver = true;
+            clearInterval(gameState.timerInterval);
+            
+            const message = `You completed the game in ${gameState.moves} moves and ${gameState.time} seconds!`;
+            document.getElementById('gameOverMessage').textContent = message;
+            
+            setTimeout(() => {
+                document.getElementById('gameOverModal').classList.add('show');
+            }, 500);
+        }
+
+        function showInstructions() {
+            alert('🎮 HOW TO PLAY:\n\n1. Click on cards to flip them and reveal the content\n2. Try to match pairs (question mark side with the answer side)\n3. Match all 12 pairs to win!\n\n📊 CATEGORIES:\n💼 Work Experience\n🎓 Education\n🛠️ Skills\n\nGood luck!');
+        }
+
+        // Initialize game on page load
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
 </body>
 </html>
