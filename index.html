@@ -302,6 +302,15 @@
             transform: rotate(90deg);
         }
 
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
         .modal-content {
             position: relative;
         }
@@ -358,6 +367,7 @@
         
         <div class="button-group">
             <button class="start-btn" onclick="openStartModal()">Start Game</button>
+            <button class="start-btn" onclick="openPortfolioModal()" style="background: #9c27b0;">My Portfolio</button>
         </div>
 
         <div class="stats">
@@ -389,18 +399,185 @@
 
     <!-- Game Over Modal -->
     <div id="gameOverModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <button class="close-btn" onclick="closeGameOverModal()">&times;</button>
             <h2>🎉 You Won!</h2>
             <p id="finalStats"></p>
+            
+            <!-- Portfolio Fact Reveal -->
+            <div id="factReveal" style="margin: 25px 0; padding: 20px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <div style="font-size: 2.5rem; margin-bottom: 10px;" id="factIcon">🎓</div>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;" id="factCategory">New Discovery!</div>
+                <div style="font-size: 1rem; line-height: 1.6;" id="factText"></div>
+            </div>
+            
+            <div style="margin: 15px 0; color: #666; font-size: 0.95rem;">
+                <strong>Progress:</strong> <span id="factProgress">0/18</span> facts discovered
+            </div>
+            
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-primary" onclick="openStartModal()">Play Again</button>
+                <button class="modal-btn" onclick="openPortfolioModal()" style="background: #9c27b0; color: white;">View All Facts</button>
                 <button class="modal-btn modal-btn-secondary" onclick="closeGameOverModal()">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- Portfolio Modal -->
+    <div id="portfolioModal" class="modal">
+        <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+            <button class="close-btn" onclick="closePortfolioModal()">&times;</button>
+            <h2 style="margin-bottom: 10px;">📚 My Portfolio</h2>
+            <p style="color: #666; margin-bottom: 20px;">Discover facts about me by playing the memory game!</p>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                <strong>Progress:</strong> <span id="portfolioProgress">0/18</span> facts discovered
+            </div>
+            
+            <div id="portfolioContent"></div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="closePortfolioModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Portfolio Facts Data
+        const portfolioFacts = [
+            // Education (4 facts)
+            { id: 1, category: 'education', icon: '🎓', fact: "I have a Master's degree (M.Sc.) in Informatics from Technical University of Munich, Germany (2017-2020)" },
+            { id: 2, category: 'education', icon: '🎓', fact: "My Master's thesis was on 'Visualization of Semantically Meaningful Representations of Large Multi-dimensional Time Series on Supercomputers'" },
+            { id: 3, category: 'education', icon: '🎓', fact: "I have a Bachelor's degree (B.Sc.) in Computer Science from Bandung Institute of Technology (ITB), Indonesia (2010-2015)" },
+            { id: 4, category: 'education', icon: '🎓', fact: "My Bachelor's thesis was on 'MemcacheDB Persistent Implementation using LevelDB'" },
+            
+            // Work Experience (8 facts)
+            { id: 5, category: 'work', icon: '💼', fact: "I'm currently a Research Engineer at the Information Retrieval Lab, University of Amsterdam, Netherlands (since April 2023)" },
+            { id: 6, category: 'work', icon: '💼', fact: "I work on projects like web-based annotation platforms for fairness in ranking (AnnoRank), intent prediction in conversational LLMs, and sparse/dense retrieval" },
+            { id: 7, category: 'work', icon: '💼', fact: "I've experimented with diffusion-guided image captioning using visual language pretraining models and Q-Former" },
+            { id: 8, category: 'work', icon: '💼', fact: "I was a Research Assistant at the High Performance Computing Group, University of Basel, Switzerland (2021-2022)" },
+            { id: 9, category: 'work', icon: '💼', fact: "I contributed to the EU Horizon 2020 DAPHNE project, optimizing task scheduling in data analysis pipelines" },
+            { id: 10, category: 'work', icon: '💼', fact: "I worked as a Student Software Developer at Intel, Germany (2017-2019), building IoT MQTT Gateway modules for the Open IoT Service Platform" },
+            { id: 11, category: 'work', icon: '💼', fact: "I was a Software Engineer at the Microelectronics Center, ITB, Indonesia (2016-2017), working on e-Healthcare smart card systems" },
+            { id: 12, category: 'work', icon: '💼', fact: "I was an Intern at BlackBerry Innovation Center, Indonesia (2014-2015), developing smart energy and building automation using Android and machine learning" },
+            
+            // Skills (3 facts)
+            { id: 13, category: 'skills', icon: '🛠️', fact: "My tech stack includes: Python, PyTorch, LLMs, C++, JavaScript, Docker, SLURM, Kafka, and web prototyping" },
+            { id: 14, category: 'skills', icon: '🛠️', fact: "I have experience with HPC (High-Performance Computing), MPI, LLVM MLIR compiler, and cluster management" },
+            { id: 15, category: 'skills', icon: '🛠️', fact: "I speak Indonesian (Native), English (Fluent), German (A2.2), and Dutch (A2.1)" },
+            
+            // Extra (3 facts)
+            { id: 16, category: 'extra', icon: '🏆', fact: "I was the Program Logistics Lead for ELLIS European Summer School on Information Retrieval (ESSIR 2024)" },
+            { id: 17, category: 'extra', icon: '🏆', fact: "I completed the NVIDIA Fundamentals of Deep Learning for Computer Vision certification (2019)" },
+            { id: 18, category: 'extra', icon: '🏆', fact: "I attended the ELLIS Winter School on Foundation Models at University of Amsterdam (2023)" }
+        ];
+
+        // Category styling
+        const categoryStyles = {
+            education: { color: '#9c27b0', name: 'Education' },
+            work: { color: '#2196F3', name: 'Work Experience' },
+            skills: { color: '#ff9800', name: 'Skills' },
+            extra: { color: '#4CAF50', name: 'Achievements' }
+        };
+
+        // LocalStorage functions
+        function getDiscoveredFacts() {
+            const discovered = localStorage.getItem('discoveredFacts');
+            return discovered ? JSON.parse(discovered) : [];
+        }
+
+        function discoverFact(id) {
+            const discovered = getDiscoveredFacts();
+            if (!discovered.includes(id)) {
+                discovered.push(id);
+                localStorage.setItem('discoveredFacts', JSON.stringify(discovered));
+                return true; // New discovery
+            }
+            return false; // Already discovered
+        }
+
+        function getRandomUndiscoveredFact() {
+            const discovered = getDiscoveredFacts();
+            const undiscovered = portfolioFacts.filter(fact => !discovered.includes(fact.id));
+            
+            if (undiscovered.length > 0) {
+                return undiscovered[Math.floor(Math.random() * undiscovered.length)];
+            } else {
+                // All discovered, return random fact
+                return portfolioFacts[Math.floor(Math.random() * portfolioFacts.length)];
+            }
+        }
+
+        function updateProgressDisplays() {
+            const discovered = getDiscoveredFacts();
+            const progressText = `${discovered.length}/18`;
+            
+            const factProgress = document.getElementById('factProgress');
+            const portfolioProgress = document.getElementById('portfolioProgress');
+            
+            if (factProgress) factProgress.textContent = progressText;
+            if (portfolioProgress) portfolioProgress.textContent = progressText;
+        }
+
+        // Modal functions for Portfolio
+        function openPortfolioModal() {
+            renderPortfolioContent();
+            updateProgressDisplays();
+            document.getElementById('portfolioModal').classList.add('show');
+        }
+
+        function closePortfolioModal() {
+            document.getElementById('portfolioModal').classList.remove('show');
+        }
+
+        function renderPortfolioContent() {
+            const discovered = getDiscoveredFacts();
+            const content = document.getElementById('portfolioContent');
+            
+            // Group facts by category
+            const categories = ['education', 'work', 'skills', 'extra'];
+            let html = '';
+            
+            categories.forEach(category => {
+                const categoryFacts = portfolioFacts.filter(f => f.category === category);
+                const categoryStyle = categoryStyles[category];
+                
+                html += `
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: ${categoryStyle.color}; margin-bottom: 15px; font-size: 1.2rem;">
+                            ${categoryFacts[0].icon} ${categoryStyle.name}
+                        </h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                `;
+                
+                categoryFacts.forEach(fact => {
+                    const isDiscovered = discovered.includes(fact.id);
+                    
+                    if (isDiscovered) {
+                        html += `
+                            <div style="padding: 15px; background: ${categoryStyle.color}15; border-left: 4px solid ${categoryStyle.color}; border-radius: 8px; font-size: 0.95rem; line-height: 1.6;">
+                                ${fact.fact}
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div style="padding: 15px; background: #f5f5f5; border-left: 4px solid #ddd; border-radius: 8px; color: #999; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.2rem;">🔒</span>
+                                <span style="font-style: italic;">Play the game to unlock this fact</span>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+        }
+
         let cards = [];
         let flipped = [];
         let matched = 0;
@@ -533,11 +710,45 @@
         }
 
         function showGameOverModal() {
+            // Get a random undiscovered fact
+            const fact = getRandomUndiscoveredFact();
+            const isNew = discoverFact(fact.id);
+            const categoryStyle = categoryStyles[fact.category];
+            
+            // Update fact display
+            document.getElementById('factIcon').textContent = fact.icon;
+            document.getElementById('factCategory').textContent = isNew ? 'New Discovery!' : categoryStyle.name;
+            document.getElementById('factText').textContent = fact.fact;
+            
+            // Update fact card background color
+            const factReveal = document.getElementById('factReveal');
+            factReveal.style.background = `linear-gradient(135deg, ${categoryStyle.color} 0%, ${categoryStyle.color}dd 100%)`;
+            
+            // Add celebration animation for new discoveries
+            if (isNew) {
+                factReveal.style.animation = 'none';
+                setTimeout(() => {
+                    factReveal.style.animation = 'pulse 0.5s ease-in-out';
+                }, 10);
+            }
+            
+            // Update progress
+            updateProgressDisplays();
+            
+            // Check if all facts discovered
+            const discovered = getDiscoveredFacts();
+            const allDiscovered = discovered.length === portfolioFacts.length;
+            
+            if (allDiscovered && isNew) {
+                document.getElementById('factCategory').textContent = '🎊 Collection Complete! 🎊';
+            }
+            
+            // Show stats
             document.getElementById('finalStats').innerHTML = `
-                <p>Congratulations!</p>
                 <p>You completed the game in <strong>${moves} moves</strong></p>
                 <p>Difficulty: <strong>${selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}</strong></p>
             `;
+            
             document.getElementById('gameOverModal').classList.add('show');
         }
 
@@ -545,12 +756,16 @@
         window.onclick = function(event) {
             const startModal = document.getElementById('startModal');
             const gameOverModal = document.getElementById('gameOverModal');
+            const portfolioModal = document.getElementById('portfolioModal');
             
             if (event.target === startModal) {
                 closeStartModal();
             }
             if (event.target === gameOverModal) {
                 closeGameOverModal();
+            }
+            if (event.target === portfolioModal) {
+                closePortfolioModal();
             }
         }
     </script>
