@@ -1,1 +1,558 @@
-<!-- Placeholder to retrieve current content -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 2.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .start-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .difficulty-btn:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .difficulty-btn.active {
+            background: #ff9800;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .stats {
+            color: white;
+            font-size: 1.1rem;
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-board {
+            display: grid;
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 500px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .grid-6 {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 600px;
+        }
+
+        .card {
+            width: 100%;
+            aspect-ratio: 1;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid white;
+            color: white;
+        }
+
+        .card-front:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            color: #333;
+            user-select: none;
+        }
+
+        .card.matched .card-front,
+        .card.matched .card-back {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .modal-content p {
+            color: #666;
+            font-size: 1.1rem;
+            margin: 15px 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .modal-btn-secondary {
+            background: #f44336;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #333;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #f44336;
+            transform: rotate(90deg);
+        }
+
+        .modal-content {
+            position: relative;
+        }
+
+        .difficulty-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .game-board {
+                max-width: 100%;
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .card-front,
+            .card-back {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+                margin: 20px;
+                max-width: 90%;
+            }
+
+            .close-btn {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Memory Card Game</h1>
+        
+        <div class="button-group">
+            <button class="start-btn" onclick="openStartModal()">Start Game</button>
+        </div>
+
+        <div class="stats">
+            <p>Moves: <span id="moves">0</span> | Matched: <span id="matched">0</span>/<span id="total">0</span></p>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+    </div>
+
+    <!-- Start Game Modal -->
+    <div id="startModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeStartModal()">&times;</button>
+            <h2>Select Difficulty</h2>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn active" onclick="selectDifficulty('easy')">Easy</button>
+                <button class="difficulty-btn" onclick="selectDifficulty('medium')">Medium</button>
+                <button class="difficulty-btn" onclick="selectDifficulty('hard')">Hard</button>
+            </div>
+            <div class="difficulty-info" id="difficultyInfo">
+                <p>4x4 Grid | 8 Pairs | Perfect for beginners</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="startGame()">Play Game</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeStartModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeGameOverModal()">&times;</button>
+            <h2>🎉 You Won!</h2>
+            <p id="finalStats"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="openStartModal()">Play Again</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeGameOverModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cards = [];
+        let flipped = [];
+        let matched = 0;
+        let moves = 0;
+        let gameActive = false;
+        let selectedDifficulty = 'easy';
+
+        const difficulties = {
+            easy: { rows: 4, cols: 4, pairs: 8, info: '4x4 Grid | 8 Pairs | Perfect for beginners' },
+            medium: { rows: 4, cols: 6, pairs: 12, info: '4x6 Grid | 12 Pairs | More challenging' },
+            hard: { rows: 6, cols: 6, pairs: 18, info: '6x6 Grid | 18 Pairs | Expert level' }
+        };
+
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐤'];
+
+        function openStartModal() {
+            document.getElementById('startModal').classList.add('show');
+        }
+
+        function closeStartModal() {
+            document.getElementById('startModal').classList.remove('show');
+        }
+
+        function closeGameOverModal() {
+            document.getElementById('gameOverModal').classList.remove('show');
+        }
+
+        function selectDifficulty(level) {
+            selectedDifficulty = level;
+            const buttons = document.querySelectorAll('.difficulty-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('difficultyInfo').innerHTML = `<p>${difficulties[level].info}</p>`;
+        }
+
+        function startGame() {
+            closeStartModal();
+            initializeGame();
+            gameActive = true;
+        }
+
+        function initializeGame() {
+            const difficulty = difficulties[selectedDifficulty];
+            cards = [];
+            flipped = [];
+            matched = 0;
+            moves = 0;
+            gameActive = true;
+
+            // Create card pairs
+            const pairs = difficulty.pairs;
+            const cardEmojis = emojis.slice(0, pairs);
+            cardEmojis.forEach(emoji => {
+                cards.push(emoji);
+                cards.push(emoji);
+            });
+
+            // Shuffle cards
+            cards = cards.sort(() => Math.random() - 0.5);
+
+            // Create game board
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.className = 'game-board ' + (selectedDifficulty === 'easy' ? 'grid-4' : 'grid-6');
+            gameBoard.innerHTML = '';
+
+            cards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">?</div>
+                        <div class="card-back">${emoji}</div>
+                    </div>
+                `;
+                card.onclick = () => flipCard(index);
+                gameBoard.appendChild(card);
+            });
+
+            updateStats();
+        }
+
+        function flipCard(index) {
+            if (!gameActive || flipped.length >= 2 || flipped.includes(index)) return;
+
+            const card = document.querySelectorAll('.card')[index];
+            card.classList.add('flipped');
+            flipped.push(index);
+
+            if (flipped.length === 2) {
+                gameActive = false;
+                moves++;
+                updateStats();
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = flipped;
+            const isMatch = cards[first] === cards[second];
+
+            setTimeout(() => {
+                if (isMatch) {
+                    document.querySelectorAll('.card')[first].classList.add('matched');
+                    document.querySelectorAll('.card')[second].classList.add('matched');
+                    matched++;
+                    updateStats();
+                    flipped = [];
+                    gameActive = true;
+
+                    // Check if game is won
+                    const difficulty = difficulties[selectedDifficulty];
+                    if (matched === difficulty.pairs) {
+                        gameActive = false;
+                        showGameOverModal();
+                    }
+                } else {
+                    document.querySelectorAll('.card')[first].classList.remove('flipped');
+                    document.querySelectorAll('.card')[second].classList.remove('flipped');
+                    flipped = [];
+                    gameActive = true;
+                }
+            }, 600);
+        }
+
+        function updateStats() {
+            const difficulty = difficulties[selectedDifficulty];
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('matched').textContent = matched;
+            document.getElementById('total').textContent = difficulty.pairs;
+        }
+
+        function showGameOverModal() {
+            document.getElementById('finalStats').innerHTML = `
+                <p>Congratulations!</p>
+                <p>You completed the game in <strong>${moves} moves</strong></p>
+                <p>Difficulty: <strong>${selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}</strong></p>
+            `;
+            document.getElementById('gameOverModal').classList.add('show');
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const startModal = document.getElementById('startModal');
+            const gameOverModal = document.getElementById('gameOverModal');
+            
+            if (event.target === startModal) {
+                closeStartModal();
+            }
+            if (event.target === gameOverModal) {
+                closeGameOverModal();
+            }
+        }
+    </script>
+</body>
+</html>
